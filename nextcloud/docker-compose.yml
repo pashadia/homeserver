@@ -59,4 +59,4 @@ networks:
   nextcloud:
     driver: bridge
     driver_opts:
-      com.docker.network.bridge.enable_ip_masquerade: "true"
+      isolate: "false"
