@@ -54,10 +54,9 @@ services:
       - valkey
     networks:
       - nextcloud
-      - podman
 
 networks:
   nextcloud:
     driver: bridge
-  podman:
-    external: true
+    driver_opts:
+      com.docker.network.bridge.enable_ip_masquerade: "true"
