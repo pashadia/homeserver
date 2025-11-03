@@ -54,7 +54,10 @@ services:
       - valkey
     networks:
       - nextcloud
+      - podman
 
 networks:
   nextcloud:
     driver: bridge
+  podman:
+    external: true
