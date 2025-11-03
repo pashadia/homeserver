@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /data/nextcloud/db:/var/lib/postgresql/data
+    networks:
+      - nextcloud
+
+  valkey:
+    image: valkey/valkey:7-alpine
+    restart: unless-stopped
+    command: valkey-server --requirepass ${VALKEY_PASSWORD}
+    networks:
+      - nextcloud
+
+  nextcloud:
+    image: nextcloud:apache
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Database
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # Redis/Valkey
+      REDIS_HOST: valkey
+      REDIS_HOST_PASSWORD: ${VALKEY_PASSWORD}
+
+      # Nextcloud settings
+      NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_TRUSTED_DOMAINS}
+      OVERWRITEPROTOCOL: http
+
+      # PHP settings
+      PHP_MEMORY_LIMIT: 512M
+      PHP_UPLOAD_LIMIT: 10G
+    volumes:
+      - /data/nextcloud/html:/var/www/html
+      - /data/nextcloud/data:/var/www/html/data
+    depends_on:
+      - postgres
+      - valkey
+    networks:
+      - nextcloud
+
+networks:
+  nextcloud:
+    driver: bridge
